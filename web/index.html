@@ -1,0 +1,2007 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JARVIS 2.0 • Iron Man MK-85 Holographic HUD</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            abyss: '#02060D',
+            elevatedNavy: '#06101E',
+            recessedDark: '#030912',
+            structuralBlue: '#0F3460',
+            electricCyan: '#00F0FF',
+            iceBlue: '#80F8FF',
+            cobaltMid: '#0077FF',
+            slateWhite: '#E2E8F0',
+            coolSteel: '#94A3B8',
+            crimsonWarning: '#FF1E42',
+            alertSurface: '#18040A'
+          },
+          fontFamily: {
+            mono: ['Consolas', 'JetBrains Mono', 'monospace'],
+            sans: ['Segoe UI', 'Inter', 'system-ui', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- React 18 & Babel -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #02060D;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #0F3460;
+      border-radius: 2px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #00F0FF;
+    }
+
+    /* Window Drag Region for Frameless Window */
+    .pywebview-drag-region {
+      -webkit-app-region: drag;
+      user-select: none;
+    }
+
+    .no-drag {
+      -webkit-app-region: no-drag;
+    }
+
+    /* 3D Elevated Panel Shadows with Soft Ambient Cyan Aura */
+    /* 3D Elevated Panel Shadows with Intense Neon Blue Glow */
+    .panel-elevation {
+      background: #06101E;
+      border: 1px solid #0F3460;
+      box-shadow: 0 12px 28px -4px #010308, 0 6px 14px -3px #010308, 0 0 20px rgba(0, 240, 255, 0.12), inset 0 1px 0 rgba(0, 240, 255, 0.25);
+      border: 1px solid rgba(0, 240, 255, 0.45);
+      box-shadow: 0 0 16px rgba(0, 240, 255, 0.28), 0 0 32px rgba(0, 240, 255, 0.12), 0 8px 24px -2px #010308, inset 0 1px 0 rgba(0, 240, 255, 0.5);
+      transition: all 0.25s ease-in-out;
+    }
+
+    .panel-elevation:hover {
+      border-color: #00F0FF;
+      box-shadow: 0 0 24px rgba(0, 240, 255, 0.45), 0 0 48px rgba(0, 240, 255, 0.22), 0 10px 28px -2px #010308, inset 0 1px 0 rgba(128, 248, 255, 0.7);
+    }
+
+    .panel-recessed {
+      background: #030912;
+      border: 1px solid #0F3460;
+      box-shadow: inset 0 2px 6px 0 #010308;
+      border: 1px solid rgba(15, 52, 96, 0.9);
+      box-shadow: inset 0 2px 8px 0 #010308, 0 0 8px rgba(0, 240, 255, 0.08);
+    }
+
+    /* High-Contrast Neon Text Glow Effects */
+    .neon-text {
+      color: #00F0FF;
+      text-shadow: 0 0 8px #00F0FF, 0 0 16px rgba(0, 240, 255, 0.7), 0 0 24px rgba(0, 119, 255, 0.4);
+    }
+
+    .neon-text-ice {
+      color: #80F8FF;
+      text-shadow: 0 0 8px #80F8FF, 0 0 14px rgba(128, 248, 255, 0.6);
+    }
+
+    .neon-text-white {
+      color: #FFFFFF;
+      text-shadow: 0 0 8px rgba(0, 240, 255, 0.9), 0 0 18px rgba(0, 240, 255, 0.6);
+    }
+
+    .neon-text-alert {
+      color: #FF1E42;
+      text-shadow: 0 0 8px #FF1E42, 0 0 16px rgba(255, 30, 66, 0.8);
+    }
+
+    /* Radar Sweep & Tactical Blip Animations */
+    @keyframes radarSweepAnim {
+      from {
+        transform: rotate(0deg);
+      }
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .radar-sweep-beam {
+      transform-origin: 100px 68px;
+      animation: radarSweepAnim 3.8s linear infinite;
+    }
+
+    @keyframes radarPingAnim {
+      0% {
+        r: 2px;
+        opacity: 1;
+      }
+      70% {
+        r: 9px;
+        opacity: 0.15;
+      }
+      100% {
+        r: 12px;
+        opacity: 0;
+      }
+    }
+
+    .radar-ping-ring {
+      animation: radarPingAnim 2.2s ease-out infinite;
+    }
+
+    /* Chamfered 45-degree Sci-Fi Corners */
+    .chamfer-panel {
+      clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+    }
+
+    .chamfer-box {
+      clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+    }
+
+    /* Monochromatic Neon Cyan Glows */
+    .cyan-glow {
+      box-shadow: 0 0 22px rgba(0, 240, 255, 0.35), inset 0 0 15px rgba(0, 240, 255, 0.15);
+    }
+
+    .ice-glow {
+      box-shadow: 0 0 25px rgba(128, 248, 255, 0.4), inset 0 0 18px rgba(128, 248, 255, 0.2);
+    }
+
+    .alert-glow {
+      box-shadow: 0 0 25px rgba(255, 30, 66, 0.45), inset 0 0 15px rgba(255, 30, 66, 0.25);
+    }
+
+    /* Keyframe Animations */
+    @keyframes pulseBreathingIdle {
+
+      0%,
+      100% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 14px #00F0FF);
+      }
+
+      50% {
+        transform: scale(1.05);
+        filter: drop-shadow(0 0 26px #80F8FF);
+      }
+    }
+
+    @keyframes pulseBreathingVoice {
+
+      0%,
+      100% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 18px #00F0FF);
+      }
+
+      50% {
+        transform: scale(1.15);
+        filter: drop-shadow(0 0 38px #80F8FF);
+      }
+    }
+
+    @keyframes circuitMarch {
+      0% {
+        stroke-dashoffset: 120;
+      }
+
+      100% {
+        stroke-dashoffset: 0;
+      }
+    }
+
+    @keyframes rotateClockwise {
+      from {
+        transform: rotate(0deg);
+      }
+
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes rotateCounter {
+      from {
+        transform: rotate(360deg);
+      }
+
+      to {
+        transform: rotate(0deg);
+      }
+    }
+
+    .anim-core-idle {
+      animation: pulseBreathingIdle 3s ease-in-out infinite;
+    }
+
+    .anim-core-voice {
+      animation: pulseBreathingVoice 1s ease-in-out infinite;
+    }
+
+    .anim-circuit-march {
+      stroke-dasharray: 8, 12;
+      animation: circuitMarch 6s linear infinite;
+    }
+
+    .anim-spin-cw-fast {
+      animation: rotateClockwise 10s linear infinite;
+    }
+
+    .anim-spin-ccw-fast {
+      animation: rotateCounter 12s linear infinite;
+    }
+
+    .anim-spin-cw-slow {
+      animation: rotateClockwise 28s linear infinite;
+    }
+
+    .anim-spin-ccw-slow {
+      animation: rotateCounter 22s linear infinite;
+    }
+
+    /* Hexagon Geometry */
+    .hex-cell {
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    }
+  </style>
+</head>
+
+<body class="bg-abyss text-slateWhite font-sans h-screen w-screen overflow-hidden select-none">
+  <div id="root" class="h-full w-full flex flex-col"></div>
+
+  <!-- React 18 Application Script -->
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    // =========================================================================
+    // HIGH-CONTRAST NEON BLUE VECTOR ICONS (ZERO EMOJIS, ZERO AMBER)
+    // =========================================================================
+    const Icons = {
+      Activity: () => (
+        <svg className="w-3.5 h-3.5 inline-block text-electricCyan" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+        </svg>
+      ),
+      Search: () => (
+        <svg className="w-3.5 h-3.5 inline-block text-electricCyan" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+      ),
+      Globe: () => (
+        <svg className="w-3.5 h-3.5 inline-block text-electricCyan" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="2" y1="12" x2="22" y2="12"></line>
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+        </svg>
+      ),
+      Camera: () => (
+        <svg className="w-3.5 h-3.5 inline-block text-iceBlue" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+          <circle cx="12" cy="13" r="4"></circle>
+        </svg>
+      ),
+      Terminal: () => (
+        <svg className="w-3.5 h-3.5 inline-block text-electricCyan" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="4 17 10 11 4 5"></polyline>
+          <line x1="12" y1="19" x2="20" y2="19"></line>
+        </svg>
+      ),
+      Settings: () => (
+        <svg className="w-3.5 h-3.5 inline-block text-iceBlue" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+      ),
+      Eye: () => (
+        <svg className="w-3 h-3 inline-block" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+          <circle cx="12" cy="12" r="3"></circle>
+        </svg>
+      ),
+      Sun: () => (
+        <svg className="w-4 h-4 inline-block text-iceBlue" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="5"></circle>
+          <line x1="12" y1="1" x2="12" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="23"></line>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+          <line x1="1" y1="12" x2="3" y2="12"></line>
+          <line x1="21" y1="12" x2="23" y2="12"></line>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+      ),
+      Send: () => (
+        <svg className="w-3.5 h-3.5 inline-block" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+      ),
+      Volume: () => (
+        <svg className="w-4 h-4 inline-block text-electricCyan" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+        </svg>
+      ),
+      Bolt: () => (
+        <svg className="w-3.5 h-3.5 inline-block text-iceBlue" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+        </svg>
+      ),
+      Alert: () => (
+        <svg className="w-3.5 h-3.5 inline-block text-crimsonWarning" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+          <line x1="12" y1="9" x2="12" y2="13"></line>
+          <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>
+      )
+    };
+
+    function IronManHUD() {
+      // -----------------------------------------------------------------------
+      // REAL-TIME SYSTEM TELEMETRY STATE
+      // -----------------------------------------------------------------------
+      const [telemetry, setTelemetry] = useState({
+        cpu: { usage_percent: 28, logical_cores: 4, physical_cores: 2, clock_speed_ghz: 2.61 },
+        memory: { total_gb: 7.85, used_gb: 6.1, free_gb: 1.75, usage_percent: 78 },
+        storage_drives: [{ drive: "C:\\", total_gb: 237.8, used_gb: 204.6, free_gb: 33.2, usage_percent: 86.0 }],
+        power_battery: { present: true, percent: 99, plugged_in: true, status: "AC Power Connected" },
+        uptime: "8d 14h 12m",
+        os: "Windows 10 (64bit)",
+        top_active_consumers: [
+          { process: "Antigravity IDE.exe", total_memory_mb: 2072 },
+          { process: "chrome.exe", total_memory_mb: 1559 },
+          { process: "svchost.exe", total_memory_mb: 820 },
+          { process: "msedgewebview2.exe", total_memory_mb: 395 }
+        ]
+      });
+
+      // Smoothed Telemetry Values for 30 FPS Interpolation
+      const [smoothedCpu, setSmoothedCpu] = useState(28);
+      const [smoothedRam, setSmoothedRam] = useState(78);
+      const [smoothedDisk, setSmoothedDisk] = useState(86);
+
+      // Atmospheric Weather Telemetry
+      const [weather, setWeather] = useState({
+        city: "Kandy",
+        country: "Sri Lanka",
+        temp_c: "28",
+        humidity: "60",
+        wind_kmph: "6",
+        pressure_hpa: "1014",
+        visibility_km: "10",
+        condition: "Atmosphere Stable",
+        forecast: [
+          { date: "Day 1", max_c: "28", min_c: "20", desc: "Clear" },
+          { date: "Day 2", max_c: "29", min_c: "21", desc: "Partly Cloudy" },
+          { date: "Day 3", max_c: "30", min_c: "20", desc: "Partly Cloudy" }
+        ]
+      });
+
+      // Directives Checklist State (Strict Neon Blue Hierarchy)
+      const [tacticalTab, setTacticalTab] = useState('radar'); // 'radar' | 'power' | 'defense'
+  const [powerMode, setPowerMode] = useState('BALANCED');
+  const [directives, setDirectives] = useState([
+        { id: 1, label: "Calibrate Arc Reactor Core", done: true, priority: false },
+        { id: 2, label: "Neural Bus Telemetry Sync", done: true, priority: true },
+        { id: 3, label: "Subsystem Hardware Audit", done: true, priority: false },
+        { id: 4, label: "Autonomous Vision Standby", done: false, priority: true }
+      ]);
+
+      // Timers & Clocks
+      const [currentDate, setCurrentDate] = useState(new Date());
+      const [stopwatchSeconds, setStopwatchSeconds] = useState(0);
+
+      // Chat & Agent State (20% Column)
+      const [messages, setMessages] = useState([
+        {
+          id: 'init',
+          role: 'assistant',
+          text: "[JARVIS 2.0 ONLINE]\n\nWelcome back, Mr. Ahnaf. Neural link established. Monochromatic Neon Blue HUD matrix, radial energy conduits, and hyper-detailed Arc Reactor are fully active.\n\nStanding directives:\n• Check system health\n• List running applications\n• Open Chrome / Notepad\n• Capture desktop screen",
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          tools: []
+        }
+      ]);
+      const [input, setInput] = useState('');
+      const [isLoading, setIsLoading] = useState(false);
+      const [statusText, setStatusText] = useState('SYS.ONLINE');
+      const [isVisionEnabled, setIsVisionEnabled] = useState(false);
+      const [isSpeaking, setIsSpeaking] = useState(false);
+      const [speechType, setSpeechType] = useState('none');
+      const [selectedModel, setSelectedModel] = useState('openai/gpt-oss-120b');
+      const [availableModels, setAvailableModels] = useState(['openai/gpt-oss-120b', 'openai/gpt-oss-20b']);
+      const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+      const chatEndRef = useRef(null);
+      const canvasRef = useRef(null);
+
+      // -----------------------------------------------------------------------
+      // SMOOTH TELEMETRY EASING (INTERPOLATION)
+      // -----------------------------------------------------------------------
+      useEffect(() => {
+        const easeTimer = setInterval(() => {
+          const targetCpu = telemetry.cpu?.usage_percent || 0;
+          const targetRam = telemetry.memory?.usage_percent || 0;
+          const targetDisk = telemetry.storage_drives?.[0]?.usage_percent || 0;
+
+          setSmoothedCpu(prev => Number((prev + (targetCpu - prev) * 0.12).toFixed(1)));
+          setSmoothedRam(prev => Number((prev + (targetRam - prev) * 0.12).toFixed(1)));
+          setSmoothedDisk(prev => Number((prev + (targetDisk - prev) * 0.12).toFixed(1)));
+        }, 50);
+
+        return () => clearInterval(easeTimer);
+      }, [telemetry]);
+
+      // -----------------------------------------------------------------------
+      // 30 FPS FULL-SCREEN BACKGROUND ENGINE:
+      // RADIAL CONDUITS + TRAVELING PULSES + ROTATING RADAR SWEEP + TACTICAL GRID
+      // -----------------------------------------------------------------------
+      useEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        let animationFrameId;
+
+        // Vision freeze guardrail
+        window.isAnimationPaused = false;
+        window.pause_animations = () => { window.isAnimationPaused = true; };
+        window.resume_animations = () => { window.isAnimationPaused = false; };
+
+        const resizeCanvas = () => {
+          canvas.width = canvas.parentElement.offsetWidth;
+          canvas.height = canvas.parentElement.offsetHeight;
+        };
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // Constellation Particles
+        const particleCount = 42;
+        const particles = Array.from({ length: particleCount }, () => ({
+          x: Math.random() * (canvas.width || 800),
+          y: Math.random() * (canvas.height || 600),
+          vx: (Math.random() - 0.5) * 0.35,
+          vy: (Math.random() - 0.5) * 0.35,
+          radius: Math.random() * 1.5 + 0.8,
+          alpha: Math.random() * 0.5 + 0.25
+        }));
+
+        // 30 FPS Timing Variables
+        const fpsInterval = 1000 / 30;
+        let lastTime = performance.now();
+        let tick = 0;
+        let radarAngle = 0;
+
+        const loop = (currentTime) => {
+          animationFrameId = requestAnimationFrame(loop);
+
+          const elapsed = currentTime - lastTime;
+          if (elapsed < fpsInterval) return;
+          lastTime = currentTime - (elapsed % fpsInterval);
+
+          if (window.isAnimationPaused) return;
+
+          tick++;
+          radarAngle += 0.007; // Faint 360° radar sweep
+
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+          // Center coordinate of the central Arc Reactor
+          const coreX = canvas.width * 0.5;
+          const coreY = canvas.height * 0.46;
+          const coreRadius = 170;
+
+          // ===================================================================
+          // 1. SUBTLE TACTICAL MATRIX: BLUEPRINT GRID + ROTATING RADAR SWEEP
+          // ===================================================================
+          // Blueprint grid lines
+          ctx.strokeStyle = 'rgba(15, 52, 96, 0.2)';
+          ctx.lineWidth = 1;
+          for (let x = 0; x < canvas.width; x += 40) {
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, canvas.height);
+            ctx.stroke();
+          }
+          for (let y = 0; y < canvas.height; y += 40) {
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(canvas.width, y);
+            ctx.stroke();
+          }
+
+          // Faint 360° Rotating Radar Sweep Behind Reactor
+          ctx.save();
+          ctx.translate(coreX, coreY);
+          ctx.rotate(radarAngle);
+          const radarGrad = ctx.createRadialGradient(0, 0, 40, 0, 0, 380);
+          radarGrad.addColorStop(0, 'rgba(0, 240, 255, 0.08)');
+          radarGrad.addColorStop(0.5, 'rgba(0, 119, 255, 0.04)');
+          radarGrad.addColorStop(1, 'rgba(2, 6, 13, 0)');
+          ctx.fillStyle = radarGrad;
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.arc(0, 0, 380, 0, Math.PI * 0.45);
+          ctx.closePath();
+          ctx.fill();
+          ctx.restore();
+
+          // ===================================================================
+          // 2. RADIAL CONDUIT LINES CONNECTING ARC REACTOR TO EVERY SURROUNDING PANEL
+          // ===================================================================
+          const conduitPaths = [
+            // Left Panel 1: Date & Time Dial (Top Card)
+            [
+              { x: coreX - coreRadius, y: coreY - 65 },
+              { x: coreX - 250, y: coreY - 65 },
+              { x: coreX - 330, y: 88 },
+              { x: 250, y: 88 }
+            ],
+            // Left Panel 2: Storage Drive (Card 2)
+            [
+              { x: coreX - coreRadius, y: coreY - 25 },
+              { x: coreX - 260, y: coreY - 25 },
+              { x: 250, y: 195 }
+            ],
+            // Left Panel 3: Active Tasks (Card 3)
+            [
+              { x: coreX - coreRadius, y: coreY + 15 },
+              { x: coreX - 250, y: coreY + 15 },
+              { x: coreX - 310, y: 295 },
+              { x: 250, y: 295 }
+            ],
+            // Left Panel 4: System Diagnostics (Card 4)
+            [
+              { x: coreX - coreRadius, y: coreY + 55 },
+              { x: coreX - 230, y: 380 },
+              { x: 250, y: 380 }
+            ],
+            // Left Panel 5: Directives Checklist (Card 5 - Left Side)
+            [
+              { x: coreX - coreRadius, y: coreY + 90 },
+              { x: coreX - 240, y: 460 },
+              { x: 250, y: 460 }
+            ],
+            // Right Panel 1: Atmosphere Weather Matrix (Top Right Card)
+            [
+              { x: coreX + coreRadius, y: coreY - 45 },
+              { x: coreX + 250, y: coreY - 45 },
+              { x: coreX + 310, y: 120 },
+              { x: canvas.width - 235, y: 120 }
+            ],
+            // Right Panel 2: Tactical Radar & Defense Matrix (Center Right Card)
+            [
+              { x: coreX + coreRadius, y: coreY + 30 },
+              { x: coreX + 230, y: coreY + 30 },
+              { x: coreX + 290, y: 310 },
+              { x: canvas.width - 235, y: 310 }
+            ],
+            // Right Panel 3: Honeycomb Matrix & Lower Telemetry
+            [
+              { x: coreX + coreRadius, y: coreY + 75 },
+              { x: coreX + 250, y: 440 },
+              { x: canvas.width - 235, y: 440 }
+            ],
+            // Bottom Panel 1: Network & RAM Gauges
+            [
+              { x: coreX - 85, y: coreY + coreRadius },
+              { x: coreX - 85, y: coreY + 220 },
+              { x: coreX - 240, y: canvas.height - 70 }
+            ],
+            // Bottom Panel 2: CPU & Mission Clock Gauges
+            [
+              { x: coreX + 85, y: coreY + coreRadius },
+              { x: coreX + 85, y: coreY + 220 },
+              { x: coreX + 240, y: canvas.height - 70 }
+            ],
+            // Terminal Sidebar Conduit
+            [
+              { x: coreX + coreRadius, y: coreY },
+              { x: canvas.width - 20, y: coreY }
+            ]
+          ];
+
+          // Draw each conduit line
+          for (let c = 0; c < conduitPaths.length; c++) {
+            const pts = conduitPaths[c];
+            ctx.beginPath();
+            ctx.moveTo(pts[0].x, pts[0].y);
+            for (let p = 1; p < pts.length; p++) {
+              ctx.lineTo(pts[p].x, pts[p].y);
+            }
+            ctx.strokeStyle = 'rgba(15, 52, 96, 0.7)';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+
+            // Trace highlight
+            ctx.strokeStyle = 'rgba(0, 119, 255, 0.35)';
+            ctx.lineWidth = 0.8;
+            ctx.stroke();
+
+            // =================================================================
+            // 3. TRAVELING ENERGY LIGHT PACKETS WITH TRAILING GLOW TAILS
+            // =================================================================
+            // Calculate total path length
+            let totalLen = 0;
+            const segLens = [];
+            for (let p = 0; p < pts.length - 1; p++) {
+              const dx = pts[p + 1].x - pts[p].x;
+              const dy = pts[p + 1].y - pts[p].y;
+              const segLen = Math.sqrt(dx * dx + dy * dy);
+              segLens.push(segLen);
+              totalLen += segLen;
+            }
+
+            // Animate 2 photons per conduit
+            for (let ph = 0; ph < 2; ph++) {
+              const travelProgress = ((tick * 1.8 + c * 35 + ph * (totalLen * 0.5)) % totalLen);
+              let acc = 0;
+              let px = pts[0].x;
+              let py = pts[0].y;
+              let segDirX = 0;
+              let segDirY = 0;
+
+              for (let p = 0; p < segLens.length; p++) {
+                if (acc + segLens[p] >= travelProgress) {
+                  const segT = (travelProgress - acc) / segLens[p];
+                  px = pts[p].x + (pts[p + 1].x - pts[p].x) * segT;
+                  py = pts[p].y + (pts[p + 1].y - pts[p].y) * segT;
+                  segDirX = (pts[p + 1].x - pts[p].x) / segLens[p];
+                  segDirY = (pts[p + 1].y - pts[p].y) / segLens[p];
+                  break;
+                }
+                acc += segLens[p];
+              }
+
+              // Photon trailing glow tail
+              for (let t = 1; t <= 4; t++) {
+                const tailX = px - segDirX * (t * 4);
+                const tailY = py - segDirY * (t * 4);
+                ctx.beginPath();
+                ctx.arc(tailX, tailY, Math.max(0.5, 2 - t * 0.4), 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(0, 240, 255, ${0.4 / t})`;
+                ctx.fill();
+              }
+
+              // Bright Photon Head
+              ctx.beginPath();
+              ctx.arc(px, py, 2.2, 0, Math.PI * 2);
+              ctx.fillStyle = '#80F8FF';
+              ctx.shadowColor = '#00F0FF';
+              ctx.shadowBlur = 8;
+              ctx.fill();
+              ctx.shadowBlur = 0;
+            }
+          }
+
+          // ===================================================================
+          // 4. NEURAL WEB PARTICLES & INTER-NODE FILAMENTS
+          // ===================================================================
+          for (let i = 0; i < particles.length; i++) {
+            const p = particles[i];
+            p.x += p.vx;
+            p.y += p.vy;
+
+            if (p.x < 0) p.x = canvas.width;
+            if (p.x > canvas.width) p.x = 0;
+            if (p.y < 0) p.y = canvas.height;
+            if (p.y > canvas.height) p.y = 0;
+
+            // Direct link to core if near
+            const dxC = p.x - coreX;
+            const dyC = p.y - coreY;
+            const distC = Math.sqrt(dxC * dxC + dyC * dyC);
+            if (distC < 320 && distC > 180) {
+              const linkA = 0.28 * (1 - distC / 320);
+              ctx.beginPath();
+              ctx.moveTo(coreX + (dxC / distC) * coreRadius, coreY + (dyC / distC) * coreRadius);
+              ctx.lineTo(p.x, p.y);
+              ctx.strokeStyle = `rgba(0, 240, 255, ${linkA})`;
+              ctx.lineWidth = 0.8;
+              ctx.stroke();
+            }
+
+            // Draw particle
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(0, 240, 255, ${p.alpha})`;
+            ctx.fill();
+
+            // Inter-particle links
+            for (let j = i + 1; j < particles.length; j++) {
+              const p2 = particles[j];
+              const dx = p.x - p2.x;
+              const dy = p.y - p2.y;
+              const dist = Math.sqrt(dx * dx + dy * dy);
+              if (dist < 85) {
+                ctx.beginPath();
+                ctx.moveTo(p.x, p.y);
+                ctx.lineTo(p2.x, p2.y);
+                ctx.strokeStyle = `rgba(0, 240, 255, ${0.14 * (1 - dist / 85)})`;
+                ctx.lineWidth = 0.6;
+                ctx.stroke();
+              }
+            }
+          }
+        };
+
+        animationFrameId = requestAnimationFrame(loop);
+
+        return () => {
+          cancelAnimationFrame(animationFrameId);
+          window.removeEventListener('resize', resizeCanvas);
+        };
+      }, []);
+
+      // -----------------------------------------------------------------------
+      // TIMERS & TELEMETRY POLLERS
+      // -----------------------------------------------------------------------
+      useEffect(() => {
+        const clockTimer = setInterval(() => setCurrentDate(new Date()), 1000);
+        const swTimer = setInterval(() => setStopwatchSeconds(s => s + 1), 1000);
+        const teleTimer = setInterval(fetchTelemetry, 5000);
+        const statTimer = setInterval(fetchStatus, 2500);
+        const weatherTimer = setInterval(fetchWeather, 60000);
+
+        fetchTelemetry();
+        fetchStatus();
+        fetchWeather();
+
+        return () => {
+          clearInterval(clockTimer);
+          clearInterval(swTimer);
+          clearInterval(teleTimer);
+          clearInterval(statTimer);
+          clearInterval(weatherTimer);
+        };
+      }, []);
+
+      useEffect(() => {
+        chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, [messages, isLoading]);
+
+      const fetchTelemetry = async () => {
+        try {
+          const res = await fetch('/api/health');
+          if (res.ok) {
+            const data = await res.json();
+            if (data.metrics) setTelemetry(data.metrics);
+          }
+        } catch (e) { }
+      };
+
+      const fetchWeather = async () => {
+        try {
+          const res = await fetch('/api/weather');
+          if (res.ok) {
+            const data = await res.json();
+            setWeather(data);
+          }
+        } catch (e) { }
+      };
+
+      const fetchStatus = async () => {
+        try {
+          const res = await fetch('/api/status');
+          if (res.ok) {
+            const data = await res.json();
+            setIsVisionEnabled(data.is_vision_enabled);
+            setIsSpeaking(data.is_speaking);
+            setSpeechType(data.current_speech_type);
+            if (data.models_available) setAvailableModels(data.models_available);
+          }
+        } catch (e) { }
+      };
+
+      const handleWindowMinimize = () => fetch('/api/window/minimize', { method: 'POST' }).catch(() => { });
+      const handleWindowMaximize = () => fetch('/api/window/maximize', { method: 'POST' }).catch(() => { });
+      const handleWindowClose = () => fetch('/api/window/close', { method: 'POST' }).catch(() => { });
+
+      const stripEmojis = (str) => {
+        if (!str) return '';
+        return str.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1FA70}-\u{1FAFF}]/gu, '').trim();
+      };
+
+      const handleSendMessage = async (directiveText) => {
+        const text = directiveText || input.trim();
+        if (!text || isLoading) return;
+
+        // Vision screenshot freeze hook
+        if (text.toLowerCase().includes('screen') || text.toLowerCase().includes('capture')) {
+          if (window.pause_animations) window.pause_animations();
+          setTimeout(() => {
+            if (window.resume_animations) window.resume_animations();
+          }, 200);
+        }
+
+        setInput('');
+        setMessages(prev => [...prev, {
+          id: Date.now().toString(),
+          role: 'user',
+          text,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }]);
+
+        setIsLoading(true);
+        setStatusText('NEURAL.ANALYSIS');
+
+        try {
+          const res = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: text, model: selectedModel })
+          });
+          const data = await res.json();
+
+          if (data.status === 'success') {
+            const cleanResp = stripEmojis(data.response);
+            setMessages(prev => [...prev, {
+              id: (Date.now() + 1).toString(),
+              role: 'assistant',
+              text: cleanResp,
+              spokenText: data.spoken_text,
+              timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              tools: data.tool_events || [],
+              isTamil: data.is_tamil
+            }]);
+            setIsSpeaking(true);
+            setSpeechType(data.is_tamil ? 'tamil' : 'english');
+            setStatusText('SYS.ONLINE');
+            fetchTelemetry();
+          } else {
+            setMessages(prev => [...prev, {
+              id: (Date.now() + 1).toString(),
+              role: 'error',
+              text: `[ALERT] Execution failed: ${data.message || 'Unknown neural fault.'}`,
+              timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            }]);
+            setStatusText('ERR.ALERT');
+          }
+        } catch (err) {
+          setMessages(prev => [...prev, {
+            id: (Date.now() + 1).toString(),
+            role: 'error',
+            text: `[ALERT] Subsystem offline: ${err.message}`,
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          }]);
+          setStatusText('ERR.ALERT');
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      const handleToggleVision = async () => {
+        try {
+          const res = await fetch('/api/vision/toggle', { method: 'POST' });
+          if (res.ok) {
+            const data = await res.json();
+            setIsVisionEnabled(data.is_vision_enabled);
+          }
+        } catch (e) {
+          setIsVisionEnabled(!isVisionEnabled);
+        }
+      };
+
+      const handleStopSpeech = async () => {
+        try {
+          await fetch('/api/stop_speech', { method: 'POST' });
+          setIsSpeaking(false);
+          setSpeechType('none');
+        } catch (e) { }
+      };
+
+      const toggleDirective = (id) => {
+        setDirectives(prev => prev.map(d => d.id === id ? { ...d, done: !d.done } : d));
+      };
+
+      const formatStopwatch = (totalSec) => {
+        const hrs = Math.floor(totalSec / 3600);
+        const mins = Math.floor((totalSec % 3600) / 60);
+        const secs = totalSec % 60;
+        return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+      };
+
+      const monthNames = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
+      const dayNames = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
+
+      // Critical Warnings Threshold (>85% RAM/CPU, <15% battery)
+      const isCpuCritical = (telemetry.cpu?.usage_percent || 0) > 85;
+      const isRamCritical = (telemetry.memory?.usage_percent || 0) > 85;
+      const isBatteryCritical = (telemetry.power_battery?.percent || 100) < 15;
+
+      return (
+        <div className="flex flex-col h-screen w-screen overflow-hidden bg-abyss text-slateWhite relative select-none">
+
+          {/* ================================================================= */}
+          {/* 1. CUSTOM DARK TITLE BAR (32px, NO WHITE OS HEADER)               */}
+          {/* ================================================================= */}
+          <div className="h-8 w-full bg-abyss border-b border-structuralBlue flex items-center justify-between px-3 pywebview-drag-region cursor-move z-50 flex-shrink-0">
+            {/* Left Title & Status */}
+            <div className="flex items-center space-x-2">
+              <div className="w-2.5 h-2.5 hex-cell bg-electricCyan shadow-[0_0_8px_#00F0FF]"></div>
+              <span className="font-mono text-xs font-bold text-electricCyan tracking-wider">JARVIS 2.0 // MK-85 HUD</span>
+              <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-elevatedNavy border border-structuralBlue text-iceBlue">
+                {statusText}
+              </span>
+            </div>
+
+            {/* Center Drag Identifier */}
+            <div className="hidden md:flex items-center space-x-2 font-mono text-[9px] text-coolSteel tracking-widest pointer-events-none">
+              <span>[NEURAL PROTOCOL // LEVEL 4]</span>
+            </div>
+
+            {/* Right Window Control Buttons (No-Drag) */}
+            <div className="flex items-center space-x-1 no-drag">
+              <button
+                onClick={handleWindowMinimize}
+                title="Minimize Window"
+                className="w-6 h-5 flex items-center justify-center rounded text-coolSteel hover:text-slateWhite hover:bg-structuralBlue transition text-xs font-mono"
+              >
+                —
+              </button>
+              <button
+                onClick={handleWindowMaximize}
+                title="Maximize / Restore"
+                className="w-6 h-5 flex items-center justify-center rounded text-coolSteel hover:text-slateWhite hover:bg-structuralBlue transition text-xs font-mono"
+              >
+                ▢
+              </button>
+              <button
+                onClick={handleWindowClose}
+                title="Close Application"
+                className="w-6 h-5 flex items-center justify-center rounded text-coolSteel hover:text-white hover:bg-crimsonWarning transition text-xs font-mono font-bold"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+
+
+          {/* ================================================================= */}
+          {/* MAIN WORKSPACE: 80% HUD (LEFT) + 20% TERMINAL (RIGHT)             */}
+          {/* ================================================================= */}
+          <div className="flex-1 flex overflow-hidden relative">
+
+            {/* =============================================================== */}
+            {/* 80% SCREEN: SOLID LAYERED IRON MAN HUD & TELEMETRY MATRIX       */}
+            {/* =============================================================== */}
+            <div className="w-[80%] h-full relative flex flex-col p-2.5 overflow-hidden border-r border-structuralBlue/80 bg-abyss">
+
+              {/* Full-Screen Dynamic Background Canvas: Conduits + Radar + Pulses */}
+              <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none z-0" />
+
+              {/* 1. TOP 9 CIRCULAR SCI-FI HOLOGRAPHIC HUD DIALS (PURE NEON BLUE) */}
+              <div className="flex items-center justify-between z-10 px-2 py-1 border-b border-structuralBlue/60">
+
+                {/* Speaker Level Indicator */}
+                <div className="flex items-center space-x-2 text-electricCyan cursor-pointer hover:opacity-100 opacity-85">
+                  <Icons.Volume />
+                  <div className="flex space-x-0.5 items-end h-3.5">
+                    <span className="w-0.5 bg-cobaltMid h-1.5"></span>
+                    <span className="w-0.5 bg-electricCyan h-2.5"></span>
+                    <span className="w-0.5 bg-iceBlue h-3.5"></span>
+                    <span className="w-0.5 bg-iceBlue h-4"></span>
+                  </div>
+                </div>
+
+                {/* 9 Sci-Fi Dials (Pure Neon Blue Spectrum) */}
+                <div className="flex items-center space-x-2.5">
+                  {/* Dial 1: Radar sweep */}
+                  <div className="w-8 h-8 rounded-full border border-structuralBlue flex items-center justify-center relative cursor-pointer hover:border-electricCyan bg-elevatedNavy shadow-md">
+                    <div className="w-5 h-5 rounded-full border border-dashed border-electricCyan"></div>
+                    <div className="w-1.5 h-1.5 rounded-full bg-iceBlue absolute"></div>
+                  </div>
+
+                  {/* Dial 2: Chevrons */}
+                  <div className="w-8 h-8 rounded-full border border-structuralBlue flex items-center justify-center relative cursor-pointer hover:border-electricCyan bg-elevatedNavy shadow-md">
+                    <div className="flex flex-col items-center justify-center -space-y-1">
+                      <span className="text-[9px] text-iceBlue font-bold leading-none">▲</span>
+                      <span className="text-[9px] text-electricCyan font-bold leading-none">▲</span>
+                    </div>
+                  </div>
+
+                  {/* Dial 3: Bilateral Clamps */}
+                  <div className="w-8 h-8 rounded-full border border-structuralBlue flex items-center justify-center relative cursor-pointer hover:border-electricCyan bg-elevatedNavy shadow-md">
+                    <div className="flex items-center space-x-0.5">
+                      <span className="text-[10px] text-electricCyan font-bold">▶</span>
+                      <span className="text-[10px] text-electricCyan font-bold">◀</span>
+                    </div>
+                  </div>
+
+                  {/* Dial 4: Orbital Gear */}
+                  <div className="w-8 h-8 rounded-full border border-structuralBlue flex items-center justify-center relative cursor-pointer hover:border-electricCyan bg-elevatedNavy shadow-md">
+                    <div className="w-5 h-5 rounded-full border-2 border-t-electricCyan border-b-transparent border-l-electricCyan border-r-transparent"></div>
+                    <div className="w-2 h-2 rounded-full border border-iceBlue"></div>
+                  </div>
+
+                  {/* Dial 5: Hexagonal Tri-Core */}
+                  <div className="w-8 h-8 rounded-full border border-structuralBlue flex items-center justify-center relative cursor-pointer hover:border-electricCyan bg-elevatedNavy shadow-md">
+                    <div className="w-4 h-4 hex-cell bg-electricCyan/20 border border-electricCyan flex items-center justify-center">
+                      <div className="w-1 h-1 rounded-full bg-iceBlue"></div>
+                    </div>
+                  </div>
+
+                  {/* Dial 6: 3-Segment Arc */}
+                  <div className="w-8 h-8 rounded-full border border-structuralBlue flex items-center justify-center relative cursor-pointer hover:border-electricCyan bg-elevatedNavy shadow-md">
+                    <div className="w-5 h-5 rounded-full border-2 border-electricCyan border-dashed"></div>
+                  </div>
+
+                  {/* Dial 7: Crescent Arc */}
+                  <div className="w-8 h-8 rounded-full border border-structuralBlue flex items-center justify-center relative cursor-pointer hover:border-electricCyan bg-elevatedNavy shadow-md">
+                    <div className="w-5 h-5 rounded-full border-2 border-l-electricCyan border-t-electricCyan border-b-transparent border-r-transparent"></div>
+                    <div className="w-1.5 h-1.5 rounded-full bg-iceBlue"></div>
+                  </div>
+
+                  {/* Dial 8: Reticle Pip */}
+                  <div className="w-8 h-8 rounded-full border border-structuralBlue flex items-center justify-center relative cursor-pointer hover:border-electricCyan bg-elevatedNavy shadow-md">
+                    <div className="w-4 h-4 rounded-full border border-electricCyan flex items-center justify-center">
+                      <div className="w-1 h-1 bg-iceBlue translate-x-0.5 -translate-y-0.5"></div>
+                    </div>
+                  </div>
+
+                  {/* Dial 9: Tri-Star Emitter */}
+                  <div className="w-8 h-8 rounded-full border border-structuralBlue flex items-center justify-center relative cursor-pointer hover:border-electricCyan bg-elevatedNavy shadow-md">
+                    <div className="w-5 h-5 rounded-full border border-electricCyan flex items-center justify-center">
+                      <div className="w-1.5 h-1.5 rounded-full bg-iceBlue"></div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Status Header Pill */}
+                <div className="flex items-center space-x-2 font-mono text-[11px]">
+                  <span className="text-electricCyan tracking-widest font-bold">MK-85 // HUD</span>
+                </div>
+              </div>
+
+              {/* 2. MAIN 3-COLUMN INTEGRATED HUD WORKSPACE */}
+              <div className="flex-1 relative flex items-start justify-between z-10 px-2 py-1 overflow-hidden">
+
+                {/* =========================================================== */}
+                {/* COLUMN 1: LEFT TELEMETRY (COMPACT ELEVATED CHAMFERED CARDS) */}
+                {/* =========================================================== */}
+                <div className="w-60 flex flex-col justify-start space-y-1.5 py-1 font-mono text-xs z-20 flex-shrink-0">
+
+                  {/* Holographic Date & Clock Dial */}
+                  <div className="flex items-center space-x-3 p-2 rounded panel-elevation relative">
+                    <div className="w-20 h-20 rounded-full border-2 border-electricCyan relative flex flex-col items-center justify-center cyan-glow bg-recessedDark flex-shrink-0">
+                      <div className="absolute inset-1 rounded-full border border-dashed border-electricCyan/60"></div>
+                      <span className="text-[9px] text-coolSteel uppercase font-bold tracking-wider">
+                        {monthNames[currentDate.getMonth()]}
+                      </span>
+                      <span className="text-xl font-bold leading-none my-0.5 neon-text-white">
+                        {currentDate.getDate()}
+                      </span>
+                      <span className="text-[8px] text-iceBlue">
+                        {currentDate.getFullYear()}
+                      </span>
+                    </div>
+
+                    <div className="flex flex-col">
+                      <span className="text-[10px] text-coolSteel font-bold uppercase">
+                        {dayNames[currentDate.getDay()]}
+                      </span>
+                      <span className="text-xs font-bold tracking-wider neon-text-ice">
+                        {currentDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                      </span>
+                      <span className="text-[8px] mt-1 font-bold neon-text">SYNC: ACTIVE</span>
+                    </div>
+                  </div>
+
+                  {/* Storage Drive (C:) Telemetry Card */}
+                  <div className="p-2 rounded panel-elevation chamfer-box relative">
+                    <div className="text-[10px] font-bold border-b border-structuralBlue pb-1 mb-1.5 flex justify-between">
+                      <span className="text-coolSteel">STORAGE DRIVE (C:)</span>
+                      <span className="font-bold neon-text">{smoothedDisk}%</span>
+                    </div>
+
+                    <div className="panel-recessed p-1.5 rounded mb-1.5">
+                      <div className="flex justify-between text-[10px] text-slateWhite">
+                        <span className="text-coolSteel">Free:</span>
+                        <span className="font-bold neon-text-ice">{telemetry.storage_drives?.[0]?.free_gb} GB</span>
+                      </div>
+                      <div className="w-full bg-abyss h-1.5 rounded-full mt-1.5 overflow-hidden border border-structuralBlue">
+                        <div
+                          className="bg-electricCyan h-full transition-all duration-300 shadow-[0_0_8px_#00F0FF]"
+                          style={{ width: `${smoothedDisk}%` }}
+                        ></div>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-between text-[8px] text-coolSteel">
+                      <span>Used: <strong className="text-slateWhite">{telemetry.storage_drives?.[0]?.used_gb} GB</strong></span>
+                      <span>Total: <strong className="text-slateWhite">{telemetry.storage_drives?.[0]?.total_gb} GB</strong></span>
+                    </div>
+                  </div>
+
+                  {/* Active Tasks Panel */}
+                  <div className="p-2 rounded panel-elevation chamfer-box text-[9px] space-y-1.5">
+                    <div className="flex justify-between font-bold border-b border-structuralBlue pb-1">
+                      <span className="text-coolSteel uppercase">ACTIVE TASKS</span>
+                      <span className="neon-text-ice font-bold">4 RUNNING</span>
+                    </div>
+                    <div className="panel-recessed p-1.5 rounded space-y-1">
+                      {telemetry.top_active_consumers?.slice(0, 3).map((proc, idx) => (
+                        <div key={idx} className="flex justify-between text-slateWhite items-center">
+                          <span className="truncate max-w-[125px] text-coolSteel">{proc.process}</span>
+                          <span className="font-bold neon-text">{Math.round(proc.total_memory_mb)} MB</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* System Diagnostics Box */}
+                  <div className="p-2 rounded panel-elevation text-[9px] space-y-1">
+                    <div className="flex justify-between font-bold border-b border-structuralBlue pb-0.5">
+                      <span className="text-coolSteel">SYSTEM DIAGNOSTICS</span>
+                      <span className="font-bold neon-text">OPTIMAL</span>
+                    </div>
+                    <div className="flex justify-between text-coolSteel">
+                      <span>Uptime:</span>
+                      <span className="text-slateWhite font-bold">{telemetry.uptime}</span>
+                    </div>
+                    <div className="flex justify-between text-coolSteel">
+                      <span>Power:</span>
+                      <span className={`font-bold flex items-center space-x-1 ${isBatteryCritical ? 'neon-text-alert' : 'neon-text-ice'}`}>
+                        <Icons.Bolt />
+                        <span>{telemetry.power_battery?.percent}% (AC Connected)</span>
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Notes // Directives Checklist (Left Side) */}
+                  <div className="p-2 rounded panel-elevation chamfer-box relative">
+                    <div className="flex justify-between items-center text-[10px] font-bold border-b border-structuralBlue pb-1">
+                      <span className="text-coolSteel">DIRECTIVES // CHECKLIST</span>
+                      <span className="neon-text-ice cursor-pointer text-xs font-bold" onClick={() => handleSendMessage('Check system health')}>+</span>
+                    </div>
+                    <div className="panel-recessed p-1.5 rounded mt-1.5 space-y-1 text-[9px]">
+                      {directives.map(d => (
+                        <div
+                          key={d.id}
+                          onClick={() => toggleDirective(d.id)}
+                          className="flex items-center space-x-1.5 cursor-pointer hover:text-electricCyan transition"
+                        >
+                          <span className={`w-3 h-3 rounded flex items-center justify-center border text-[8px] ${d.done
+                            ? 'bg-electricCyan/20 border-electricCyan text-iceBlue font-bold shadow-[0_0_8px_#00F0FF]'
+                            : 'border-structuralBlue text-transparent'
+                            }`}>
+                            {d.done ? '✓' : ''}
+                          </span>
+                          <span className={d.done ? 'text-slateWhite neon-text-ice font-bold' : 'text-coolSteel'}>
+                            {d.label}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* =========================================================== */}
+                {/* COLUMN 2: HYPER-DETAILED 8+ LAYER ARC REACTOR CORE         */}
+                {/* =========================================================== */}
+                <div className="flex-1 h-full flex items-center justify-center z-10 px-2 pointer-events-auto relative">
+
+                  {/* HOLOGRAPHIC BIOMETRIC GREETING: WELCOME BACK MR. AHNAF */}
+                  <div className="absolute top-2 flex flex-col items-center text-center font-mono pointer-events-none z-20">
+                    <div className="flex items-center space-x-2">
+                      <span className="h-[1px] w-10 bg-gradient-to-r from-transparent to-electricCyan"></span>
+                      <span className="text-[11px] font-bold tracking-[0.35em] text-coolSteel uppercase">
+                        WELCOME BACK
+                      </span>
+                      <span className="h-[1px] w-10 bg-gradient-to-l from-transparent to-electricCyan"></span>
+                    </div>
+                    <div className="text-2xl md:text-3xl font-extrabold tracking-[0.25em] uppercase neon-text mt-0.5">
+                      MR. AHNAF
+                    </div>
+                    <div className="flex items-center space-x-1.5 text-[8px] text-iceBlue mt-0.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-electricCyan animate-ping"></span>
+                      <span className="tracking-widest font-bold">BIOMETRIC AUTHENTICATED // MK-85 READY</span>
+                    </div>
+                  </div>
+
+                  <div
+                    className="relative rounded-full aspect-square flex items-center justify-center flex-shrink-0"
+                    style={{ width: '340px', height: '340px', minWidth: '340px', minHeight: '340px' }}
+                  >
+
+                    {/* Horizontal Laser Flare Rail */}
+                    <div className="absolute w-[560px] h-[2px] bg-gradient-to-r from-transparent via-electricCyan to-transparent opacity-90 pointer-events-none"></div>
+
+                    {/* LAYER 1: Outer Compass & Crosshair Ring (000°, 090°, 180°, 270°) */}
+                    <div className="absolute inset-0 rounded-full border border-structuralBlue flex items-center justify-center pointer-events-none shadow-2xl">
+                      <span className="absolute top-1 text-[8px] font-mono text-electricCyan tracking-widest font-bold neon-text-ice">000° // MUSIC</span>
+                      <span className="absolute bottom-1 text-[8px] font-mono text-electricCyan tracking-widest font-bold neon-text-ice">180° // CONTROL</span>
+                      <span className="absolute left-1 text-[8px] font-mono text-iceBlue tracking-widest font-bold neon-text-ice">270° // MOVIES</span>
+                      <span className="absolute right-1 text-[8px] font-mono text-iceBlue tracking-widest font-bold neon-text-ice">090° // NEURAL</span>
+
+                      {/* 4 Cardinal Reticles */}
+                      <div className="absolute top-0 w-2 h-1 bg-electricCyan"></div>
+                      <div className="absolute bottom-0 w-2 h-1 bg-electricCyan"></div>
+                      <div className="absolute left-0 w-1 h-2 bg-electricCyan"></div>
+                      <div className="absolute right-0 w-1 h-2 bg-electricCyan"></div>
+                    </div>
+
+                    {/* LAYER 2: Dashed Data Bus Ring (Rotating CCW -0.5 deg/frame) */}
+                    <svg className="absolute inset-2 w-[324px] h-[324px] pointer-events-none anim-spin-ccw-slow" viewBox="0 0 100 100">
+                      <circle cx="50" cy="50" r="48" fill="none" stroke="#00F0FF" strokeWidth="0.8" strokeDasharray="8 4 2 4 12 6" />
+                    </svg>
+
+                    {/* LAYER 3: Micro-Tick Calibration Ring (72 Ticks at 5° intervals, Rotating CW 0.3 deg/frame) */}
+                    <svg className="absolute inset-5 w-[300px] h-[300px] pointer-events-none anim-spin-cw-slow" viewBox="0 0 100 100">
+                      {Array.from({ length: 72 }).map((_, i) => (
+                        <line
+                          key={i}
+                          x1="50" y1="2" x2="50" y2={i % 6 === 0 ? "6" : "4"}
+                          stroke={i % 6 === 0 ? "#80F8FF" : "#0F3460"}
+                          strokeWidth={i % 6 === 0 ? "0.8" : "0.5"}
+                          transform={`rotate(${i * 5} 50 50)`}
+                        />
+                      ))}
+                    </svg>
+
+                    {/* LAYER 4: Segmented Energy Arcs (4 Thick Cyan Arcs, Rotating CCW -0.8 deg/frame) */}
+                    <svg className="absolute inset-9 w-[268px] h-[268px] pointer-events-none anim-spin-ccw-fast" viewBox="0 0 100 100">
+                      <circle cx="50" cy="50" r="44" fill="none" stroke="#00F0FF" strokeWidth="2.5" strokeDasharray="30 40" strokeLinecap="round" />
+                    </svg>
+
+                    {/* LAYER 5: Inner Turbine Blades / Fin Ring (12 Precision Angled Wedges, Rotating CW 1.2 deg/frame) */}
+                    <svg className="absolute inset-13 w-[236px] h-[236px] pointer-events-none anim-spin-cw-fast" viewBox="0 0 100 100">
+                      {Array.from({ length: 12 }).map((_, i) => (
+                        <polygon
+                          key={i}
+                          points="48.5,8 51.5,8 53,20 47,20"
+                          fill="#80F8FF"
+                          opacity="0.85"
+                          transform={`rotate(${i * 30} 50 50)`}
+                        />
+                      ))}
+                    </svg>
+
+                    {/* LAYER 6: Inner Stepped Bevel Housing */}
+                    <div className="absolute inset-20 rounded-full border-2 border-electricCyan bg-elevatedNavy cyan-glow flex items-center justify-center shadow-[0_0_35px_rgba(0,240,255,0.4)]">
+
+                      {/* LAYER 7: Inner Plasma Core (Pulsing Radial Gradient: White -> Electric Cyan -> Cobalt) */}
+                      <div
+                        className={`w-28 h-28 rounded-full flex items-center justify-center relative cursor-pointer ${isSpeaking ? 'anim-core-voice' : 'anim-core-idle'
+                          }`}
+                        style={{
+                          background: 'radial-gradient(circle, #FFFFFF 0%, #80F8FF 25%, #00F0FF 55%, #0055FF 85%, #030912 100%)',
+                          boxShadow: '0 0 30px #00F0FF, inset 0 0 20px #80F8FF'
+                        }}
+                        onClick={() => handleSendMessage('Check system health')}
+                        title="Click Core to run System Health Check"
+                      >
+                        <div className="w-18 h-18 rounded-full bg-recessedDark/90 border border-electricCyan flex flex-col items-center justify-center relative shadow-inner">
+                          <div className="w-8 h-8 rounded-full bg-iceBlue shadow-[0_0_25px_#80F8FF] opacity-95"></div>
+                          <span className="text-[10px] font-mono font-bold text-slateWhite absolute tracking-widest drop-shadow-[0_0_8px_#00F0FF] neon-text">
+                            {isSpeaking ? 'AUDIO' : 'ARC'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* LAYER 8: Voice-Reactive Audio Halo Shockwave */}
+                    {isSpeaking && (
+                      <div className="absolute inset-0 rounded-full border-2 border-iceBlue animate-ping pointer-events-none opacity-60"></div>
+                    )}
+
+                  </div>
+                </div>
+
+                {/* =========================================================== */}
+                {/* COLUMN 3: RIGHT HUD (ATMOSPHERE MATRIX)                     */}
+                {/* =========================================================== */}
+                <div className="w-56 flex flex-col justify-start space-y-1.5 py-1 font-mono text-xs z-20 flex-shrink-0">
+
+                  {/* Atmospheric Weather Telemetry Card */}
+                  <div className="p-2 rounded panel-elevation chamfer-box relative text-[9px] space-y-1.5">
+                    <div className="flex justify-between items-center font-bold border-b border-structuralBlue pb-1">
+                      <span className="text-coolSteel tracking-wide uppercase">ATMOSPHERE MATRIX</span>
+                      <span className="neon-text-ice text-[8px] font-bold">LIVE</span>
+                    </div>
+
+                    <div className="panel-recessed p-1.5 rounded">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="text-xl font-bold leading-none neon-text-white">{weather.temp_c}°C</div>
+                          <span className="text-[8px] text-coolSteel block mt-0.5">{weather.city}, {weather.country}</span>
+                          <span className="text-[8px] font-bold neon-text-ice">{weather.condition}</span>
+                        </div>
+                        <div className="p-1.5 rounded-full border border-structuralBlue bg-elevatedNavy">
+                          <Icons.Sun />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-1 text-[8px] text-coolSteel pt-1.5 mt-1 border-t border-structuralBlue/60">
+                        <div>Humidity: <strong className="text-slateWhite">{weather.humidity}%</strong></div>
+                        <div>Wind: <strong className="text-slateWhite">{weather.wind_kmph} km/h</strong></div>
+                        <div>Pressure: <strong className="text-slateWhite">{weather.pressure_hpa} hPa</strong></div>
+                        <div>Visibility: <strong className="text-slateWhite">{weather.visibility_km} km</strong></div>
+                      </div>
+                    </div>
+
+                    {/* 3-Day Forecast Strip */}
+                    <div className="panel-recessed p-1 rounded space-y-0.5 text-[8px]">
+                      {weather.forecast?.slice(0, 3).map((f, i) => (
+                        <div key={i} className="flex justify-between items-center text-slateWhite px-1">
+                          <span className="text-coolSteel">{f.date}</span>
+                          <span className="font-bold neon-text">{f.max_c}° / {f.min_c}°</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Tactical Airspace Radar & Orbital Defense Matrix */}
+                  <div className="p-2 rounded panel-elevation chamfer-box relative flex flex-col text-[9px] space-y-1.5">
+                    {/* Header */}
+                    <div className="w-full flex justify-between items-center font-bold border-b border-structuralBlue pb-1">
+                      <div className="flex items-center space-x-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-electricCyan animate-ping"></span>
+                        <span className="text-coolSteel tracking-wide uppercase">
+                          {tacticalTab === 'radar' && 'TACTICAL RADAR // AIRSPACE'}
+                          {tacticalTab === 'power' && 'PROPULSION // POWER GRID'}
+                          {tacticalTab === 'defense' && 'DEFENSE // NANO-SHIELD'}
+                        </span>
+                      </div>
+                      <span className="neon-text-ice text-[8px] font-bold px-1 py-0.5 rounded bg-deepCobalt/20 border border-electricCyan/40">
+                        {tacticalTab === 'radar' && 'AIRSPACE CLEAR'}
+                        {tacticalTab === 'power' && '100% NOMINAL'}
+                        {tacticalTab === 'defense' && 'SHIELDS ACTIVE'}
+                      </span>
+                    </div>
+
+                    {/* Mode Navigation Pills */}
+                    <div className="grid grid-cols-3 gap-1 text-[8px]">
+                      <button
+                        onClick={() => setTacticalTab('radar')}
+                        className={`py-0.5 px-1 rounded text-center font-bold transition-all ${
+                          tacticalTab === 'radar'
+                            ? 'border border-electricCyan bg-electricCyan/20 text-electricCyan shadow-neon-blue'
+                            : 'border border-structuralBlue bg-elevatedNavy text-coolSteel hover:border-electricCyan/60'
+                        }`}
+                      >
+                        RADAR
+                      </button>
+                      <button
+                        onClick={() => setTacticalTab('power')}
+                        className={`py-0.5 px-1 rounded text-center font-bold transition-all ${
+                          tacticalTab === 'power'
+                            ? 'border border-electricCyan bg-electricCyan/20 text-electricCyan shadow-neon-blue'
+                            : 'border border-structuralBlue bg-elevatedNavy text-coolSteel hover:border-electricCyan/60'
+                        }`}
+                      >
+                        POWER
+                      </button>
+                      <button
+                        onClick={() => setTacticalTab('defense')}
+                        className={`py-0.5 px-1 rounded text-center font-bold transition-all ${
+                          tacticalTab === 'defense'
+                            ? 'border border-electricCyan bg-electricCyan/20 text-electricCyan shadow-neon-blue'
+                            : 'border border-structuralBlue bg-elevatedNavy text-coolSteel hover:border-electricCyan/60'
+                        }`}
+                      >
+                        DEFENSE
+                      </button>
+                    </div>
+
+                    {/* TAB 1: TACTICAL RADAR VIEW */}
+                    {tacticalTab === 'radar' && (
+                      <div className="space-y-1.5">
+                        {/* Holographic Radar Scope */}
+                        <div className="panel-recessed p-1 rounded flex justify-center items-center relative overflow-hidden">
+                          <svg viewBox="0 0 200 136" className="w-full h-auto max-h-[136px]" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                              <filter id="radarBloom" x="-20%" y="-20%" width="140%" height="140%">
+                                <feGaussianBlur stdDeviation="2" result="blur" />
+                                <feMerge>
+                                  <feMergeNode in="blur" />
+                                  <feMergeNode in="SourceGraphic" />
+                                </feMerge>
+                              </filter>
+
+                              <radialGradient id="radarSweepGrad" cx="0%" cy="0%" r="100%">
+                                <stop offset="0%" stopColor="#00F0FF" stopOpacity="0.45" />
+                                <stop offset="60%" stopColor="#00F0FF" stopOpacity="0.12" />
+                                <stop offset="100%" stopColor="#00F0FF" stopOpacity="0" />
+                              </radialGradient>
+                            </defs>
+
+                            {/* Background Scope Rings */}
+                            <circle cx="100" cy="68" r="62" fill="#020813" stroke="#0F3460" strokeWidth="1.2" />
+                            <circle cx="100" cy="68" r="46" fill="none" stroke="#0F3460" strokeWidth="0.8" strokeDasharray="3 4" opacity="0.8" />
+                            <circle cx="100" cy="68" r="30" fill="none" stroke="#0F3460" strokeWidth="0.8" strokeDasharray="2 3" opacity="0.7" />
+                            <circle cx="100" cy="68" r="14" fill="none" stroke="#0F3460" strokeWidth="0.6" opacity="0.6" />
+
+                            {/* Cardinal Axes & Crosshairs */}
+                            <line x1="100" y1="6" x2="100" y2="130" stroke="#0F3460" strokeWidth="0.8" strokeDasharray="2 3" />
+                            <line x1="38" y1="68" x2="162" y2="68" stroke="#0F3460" strokeWidth="0.8" strokeDasharray="2 3" />
+                            <line x1="56" y1="24" x2="144" y2="112" stroke="#0F3460" strokeWidth="0.5" strokeDasharray="1 4" opacity="0.4" />
+                            <line x1="56" y1="112" x2="144" y2="24" stroke="#0F3460" strokeWidth="0.5" strokeDasharray="1 4" opacity="0.4" />
+
+                            {/* Rotating Radar Sweep Cone & Beam */}
+                            <g className="radar-sweep-beam">
+                              {/* 50-degree sweep sector */}
+                              <path
+                                d="M 100 68 L 162 68 A 62 62 0 0 1 140 115 Z"
+                                fill="url(#radarSweepGrad)"
+                              />
+                              {/* Leading Beam Line */}
+                              <line x1="100" y1="68" x2="140" y2="115" stroke="#80F8FF" strokeWidth="1.4" filter="url(#radarBloom)" />
+                            </g>
+
+                            {/* Outer Degree Calibrations */}
+                            <circle cx="100" cy="68" r="62" fill="none" stroke="#00F0FF" strokeWidth="1" filter="url(#radarBloom)" opacity="0.75" />
+                            <text x="100" y="16" fill="#80F8FF" fontSize="6" fontFamily="monospace" textAnchor="middle" fontWeight="bold">000°</text>
+                            <text x="156" y="70" fill="#80F8FF" fontSize="6" fontFamily="monospace" textAnchor="start">090°</text>
+                            <text x="100" y="125" fill="#80F8FF" fontSize="6" fontFamily="monospace" textAnchor="middle">180°</text>
+                            <text x="44" y="70" fill="#80F8FF" fontSize="6" fontFamily="monospace" textAnchor="end">270°</text>
+
+                            {/* Target 1: Stark-Sat 01 (Bearing 042°) */}
+                            <g filter="url(#radarBloom)">
+                              <circle cx="132" cy="38" r="7" fill="none" stroke="#00F0FF" strokeWidth="0.6" className="radar-ping-ring" />
+                              <circle cx="132" cy="38" r="2.5" fill="#FFFFFF" stroke="#00F0FF" strokeWidth="1" />
+                              <line x1="135" y1="36" x2="146" y2="28" stroke="#00F0FF" strokeWidth="0.6" />
+                              <line x1="146" y1="28" x2="175" y2="28" stroke="#00F0FF" strokeWidth="0.6" />
+                              <text x="148" y="26" fill="#00F0FF" fontSize="5.5" fontFamily="monospace" fontWeight="bold">STARK-01</text>
+                              <text x="148" y="34" fill="#94A3B8" fontSize="4.5" fontFamily="monospace">42° / 180KM</text>
+                            </g>
+
+                            {/* Target 2: High-Orbit Relay (Bearing 215°) */}
+                            <g>
+                              <circle cx="72" cy="98" r="2" fill="#80F8FF" />
+                              <line x1="70" y1="100" x2="58" y2="108" stroke="#0F3460" strokeWidth="0.6" />
+                              <line x1="58" y1="108" x2="32" y2="108" stroke="#0F3460" strokeWidth="0.6" />
+                              <text x="33" y="106" fill="#80F8FF" fontSize="5" fontFamily="monospace">ORB-04</text>
+                            </g>
+
+                            {/* Target 3: Air Escort Drone (Bearing 310°) */}
+                            <g>
+                              <circle cx="78" cy="46" r="1.8" fill="#00F0FF" />
+                              <text x="56" y="44" fill="#94A3B8" fontSize="5" fontFamily="monospace">UAV-08</text>
+                            </g>
+
+                            {/* Center Reticle */}
+                            <circle cx="100" cy="68" r="2" fill="#FFFFFF" />
+                          </svg>
+                        </div>
+
+                        {/* Radar Readout Telemetry Grid */}
+                        <div className="grid grid-cols-2 gap-1 text-[8px] panel-recessed p-1.5 rounded text-coolSteel">
+                          <div>SAT LINK: <strong className="neon-text font-bold">STARK-01</strong></div>
+                          <div>BEARING: <strong className="text-slateWhite font-bold">042° NNE</strong></div>
+                          <div>AIRSPACE: <strong className="neon-text-ice font-bold">CLEAR</strong></div>
+                          <div>THREAT: <strong className="text-electricCyan font-bold">DEFCON 5</strong></div>
+                        </div>
+
+                        {/* Interactive Ping Scan Button */}
+                        <button
+                          onClick={() => {
+                            setMessages(prev => [
+                              ...prev,
+                              {
+                                id: Date.now().toString(),
+                                role: 'assistant',
+                                text: '[TACTICAL RADAR] 360° orbital scan completed. Stark-Sat 01 link verified at 042° NNE. All sectors DEFCON 5 / CLEAR.',
+                                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                              }
+                            ]);
+                          }}
+                          className="w-full py-1 text-center font-bold text-[8px] tracking-wider rounded border border-structuralBlue bg-elevatedNavy text-iceBlue hover:border-electricCyan hover:bg-electricCyan/10 transition-colors uppercase"
+                        >
+                          EXECUTE 360° AIRSPACE SCAN
+                        </button>
+                      </div>
+                    )}
+
+                    {/* TAB 2: PROPULSION / POWER GRID VIEW */}
+                    {tacticalTab === 'power' && (
+                      <div className="space-y-1.5">
+                        <div className="panel-recessed p-1.5 rounded space-y-1.5 text-[8px]">
+                          {/* Unibeam */}
+                          <div>
+                            <div className="flex justify-between items-center text-coolSteel mb-0.5">
+                              <span>CHEST UNIBEAM</span>
+                              <strong className="neon-text-ice">100% (1.21 GW)</strong>
+                            </div>
+                            <div className="w-full h-1.5 bg-black/60 rounded overflow-hidden border border-structuralBlue">
+                              <div className="h-full bg-gradient-to-r from-deepCobalt via-electricCyan to-iceBlue w-full animate-pulse"></div>
+                            </div>
+                          </div>
+
+                          {/* Left Repulsor */}
+                          <div>
+                            <div className="flex justify-between items-center text-coolSteel mb-0.5">
+                              <span>L-HAND REPULSOR</span>
+                              <strong className="neon-text">98% (4.9 KV)</strong>
+                            </div>
+                            <div className="w-full h-1.5 bg-black/60 rounded overflow-hidden border border-structuralBlue">
+                              <div className="h-full bg-electricCyan w-[98%]"></div>
+                            </div>
+                          </div>
+
+                          {/* Right Repulsor */}
+                          <div>
+                            <div className="flex justify-between items-center text-coolSteel mb-0.5">
+                              <span>R-HAND REPULSOR</span>
+                              <strong className="neon-text">98% (4.9 KV)</strong>
+                            </div>
+                            <div className="w-full h-1.5 bg-black/60 rounded overflow-hidden border border-structuralBlue">
+                              <div className="h-full bg-electricCyan w-[98%]"></div>
+                            </div>
+                          </div>
+
+                          {/* Flight Thrusters */}
+                          <div>
+                            <div className="flex justify-between items-center text-coolSteel mb-0.5">
+                              <span>BOOT THRUSTERS</span>
+                              <strong className="text-slateWhite">95% (MACH 3.2)</strong>
+                            </div>
+                            <div className="w-full h-1.5 bg-black/60 rounded overflow-hidden border border-structuralBlue">
+                              <div className="h-full bg-gradient-to-r from-deepCobalt to-electricCyan w-[95%]"></div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Power Routing Preset Buttons */}
+                        <div className="grid grid-cols-3 gap-1 text-[8px]">
+                          {['BALANCED', 'THRUST', 'OVERLOAD'].map(mode => (
+                            <button
+                              key={mode}
+                              onClick={() => {
+                                setPowerMode(mode);
+                                setMessages(prev => [
+                                  ...prev,
+                                  {
+                                    id: Date.now().toString(),
+                                    role: 'assistant',
+                                    text: `[POWER GRID] Propulsion profile rerouted to: ${mode}. Capacitors aligned.`,
+                                    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                                  }
+                                ]);
+                              }}
+                              className={`py-0.5 rounded text-center font-bold border transition-colors ${
+                                powerMode === mode
+                                  ? 'border-electricCyan bg-electricCyan/20 text-electricCyan'
+                                  : 'border-structuralBlue bg-elevatedNavy text-coolSteel hover:border-electricCyan/60'
+                              }`}
+                            >
+                              {mode}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* TAB 3: DEFENSE / NANO-SHIELD VIEW */}
+                    {tacticalTab === 'defense' && (
+                      <div className="space-y-1.5">
+                        <div className="panel-recessed p-1.5 rounded space-y-1 text-[8px]">
+                          <div className="flex justify-between items-center text-coolSteel">
+                            <span>NANO COHESION:</span>
+                            <strong className="neon-text font-bold">99.8% NOMINAL</strong>
+                          </div>
+                          <div className="flex justify-between items-center text-coolSteel">
+                            <span>KINETIC DAMPING:</span>
+                            <strong className="text-slateWhite font-bold">100% OPTIMAL</strong>
+                          </div>
+                          <div className="flex justify-between items-center text-coolSteel">
+                            <span>THERMAL TOLERANCE:</span>
+                            <strong className="neon-text-ice font-bold">820°C RATED</strong>
+                          </div>
+                          <div className="flex justify-between items-center text-coolSteel">
+                            <span>DEFLECTOR SHIELD:</span>
+                            <strong className="neon-text font-bold">PHASE 4 ACTIVE</strong>
+                          </div>
+                          <div className="flex justify-between items-center text-coolSteel border-t border-structuralBlue/50 pt-1 mt-1">
+                            <span>AUTO-REPAIR MATRIX:</span>
+                            <strong className="text-slateWhite font-bold">STANDBY</strong>
+                          </div>
+                        </div>
+
+                        <button
+                          onClick={() => {
+                            setMessages(prev => [
+                              ...prev,
+                              {
+                                id: Date.now().toString(),
+                                role: 'assistant',
+                                text: '[DEFENSE PROTOCOL] Nano-particle deflector shield harmonic frequency re-synchronized at 1.21 GW.',
+                                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                              }
+                            ]);
+                          }}
+                          className="w-full py-1 text-center font-bold text-[8px] tracking-wider rounded border border-structuralBlue bg-elevatedNavy text-iceBlue hover:border-electricCyan hover:bg-electricCyan/10 transition-colors uppercase"
+                        >
+                          RE-SYNCHRONIZE SHIELDS
+                        </button>
+                      </div>
+                    )}
+
+                  </div>
+
+                  {/* Hexagonal Honeycomb Matrix */}
+                  <div className="flex flex-col items-end pointer-events-none opacity-85 pt-0.5">
+                    <div className="flex space-x-1">
+                      <div className="w-4 h-4 hex-cell border border-structuralBlue bg-elevatedNavy"></div>
+                      <div className="w-4 h-4 hex-cell border border-electricCyan bg-electricCyan/20"></div>
+                      <div className="w-4 h-4 hex-cell border border-structuralBlue bg-elevatedNavy"></div>
+                    </div>
+                    <div className="flex space-x-1 -mt-0.5 mr-2">
+                      <div className="w-4 h-4 hex-cell border border-iceBlue bg-iceBlue/30"></div>
+                      <div className="w-4 h-4 hex-cell border border-structuralBlue bg-elevatedNavy"></div>
+                      <div className="w-4 h-4 hex-cell border border-electricCyan bg-electricCyan/70"></div>
+                      <div className="w-4 h-4 hex-cell border border-structuralBlue bg-elevatedNavy"></div>
+                    </div>
+                  </div>
+
+                </div>
+
+              </div>
+
+              {/* 3. BOTTOM LIVE CIRCULAR TELEMETRY GAUGES (EASED 30 FPS) */}
+              <div className="grid grid-cols-4 gap-2 z-10 px-2 py-1.5 border-t border-structuralBlue bg-abyss/95">
+
+                {/* Gauge 1: Network & Uplink Dial */}
+                <div className="flex items-center space-x-2.5 p-1.5 rounded panel-elevation">
+                  <div className="relative w-11 h-11 flex items-center justify-center flex-shrink-0">
+                    <div className="w-11 h-11 rounded-full border border-dashed border-electricCyan/60 flex items-center justify-center"></div>
+                    <span className="text-[8px] font-bold text-electricCyan absolute neon-text">NET</span>
+                  </div>
+                  <div className="leading-tight">
+                    <span className="text-[8px] text-coolSteel block">NET UPLINK</span>
+                    <span className="font-bold text-[10px] neon-text">▲ 8.7 KB/s</span>
+                    <span className="font-bold text-[10px] block neon-text-ice">▼ 12.4 KB/s</span>
+                    <span className="text-[8px] text-coolSteel block">192.168.1.105</span>
+                  </div>
+                </div>
+
+                {/* Gauge 2: Real-time RAM Memory % Arc (Eased Interpolation) */}
+                <div className={`flex items-center space-x-2.5 p-1.5 rounded panel-elevation ${isRamCritical ? 'border-crimsonWarning alert-glow' : ''}`}>
+                  <div className="relative w-11 h-11 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                      <circle cx="18" cy="18" r="14" fill="none" stroke="#0F3460" strokeWidth="3" />
+                      <circle
+                        cx="18" cy="18" r="14" fill="none"
+                        stroke={isRamCritical ? '#FF1E42' : '#00F0FF'}
+                        strokeWidth="3"
+                        strokeDasharray="88"
+                        strokeDashoffset={88 - (88 * smoothedRam) / 100}
+                        strokeLinecap="round"
+                        className="transition-all duration-300"
+                      />
+                    </svg>
+                    <span className={`absolute text-[9px] font-bold ${isRamCritical ? 'neon-text-alert' : 'neon-text-white'}`}>
+                      {smoothedRam}%
+                    </span>
+                  </div>
+                  <div className="leading-tight">
+                    <span className="text-[8px] text-coolSteel block">RAM MEMORY</span>
+                    <span className="text-slateWhite font-bold text-[10px]">{telemetry.memory?.used_gb} / {telemetry.memory?.total_gb} GB</span>
+                    <span className={`text-[8px] block ${isRamCritical ? 'text-crimsonWarning font-bold' : 'text-iceBlue'}`}>
+                      {isRamCritical ? 'CRITICAL LOAD' : 'STATUS: OPTIMAL'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Gauge 3: Real-time CPU Load % Arc (Eased Interpolation) */}
+                <div className={`flex items-center space-x-2.5 p-1.5 rounded panel-elevation ${isCpuCritical ? 'border-crimsonWarning alert-glow' : ''}`}>
+                  <div className="relative w-11 h-11 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                      <circle cx="18" cy="18" r="14" fill="none" stroke="#0F3460" strokeWidth="3" />
+                      <circle
+                        cx="18" cy="18" r="14" fill="none"
+                        stroke={isCpuCritical ? '#FF1E42' : '#00F0FF'}
+                        strokeWidth="3"
+                        strokeDasharray="88"
+                        strokeDashoffset={88 - (88 * smoothedCpu) / 100}
+                        strokeLinecap="round"
+                        className="transition-all duration-300"
+                      />
+                    </svg>
+                    <span className={`absolute text-[9px] font-bold ${isCpuCritical ? 'neon-text-alert' : 'neon-text-white'}`}>
+                      {smoothedCpu}%
+                    </span>
+                  </div>
+                  <div className="leading-tight">
+                    <span className="text-[8px] text-coolSteel block">CPU LOAD</span>
+                    <span className="text-slateWhite font-bold text-[10px]">{telemetry.cpu?.clock_speed_ghz} GHz</span>
+                    <span className={`text-[8px] block ${isCpuCritical ? 'text-crimsonWarning font-bold' : 'text-coolSteel'}`}>
+                      {telemetry.cpu?.logical_cores} Cores Active
+                    </span>
+                  </div>
+                </div>
+
+                {/* Gauge 4: Mission Clock & Audio Controls */}
+                <div className="flex items-center space-x-2.5 p-1.5 rounded panel-elevation">
+                  <div className="relative w-11 h-11 flex items-center justify-center flex-shrink-0">
+                    <div className="w-11 h-11 rounded-full border border-structuralBlue flex items-center justify-center">
+                      <div className="w-7 h-7 rounded-full border border-dashed border-electricCyan/50"></div>
+                    </div>
+                    <span className="text-[8px] font-bold text-electricCyan absolute neon-text">HUD</span>
+                  </div>
+                  <div className="leading-tight flex-1">
+                    <div className="flex justify-between items-center">
+                      <span className="text-[8px] text-coolSteel">MISSION CLOCK</span>
+                      <span className="font-bold text-[10px] neon-text-ice">{formatStopwatch(stopwatchSeconds)}</span>
+                    </div>
+                    <div className="flex items-center space-x-2 mt-0.5 text-electricCyan text-[9px]">
+                      <span className="cursor-pointer hover:text-white" title="Previous">⏮</span>
+                      <span className="cursor-pointer hover:text-white" onClick={handleStopSpeech} title="Pause Audio">⏸</span>
+                      <span className="cursor-pointer hover:text-white" title="Next">⏭</span>
+                      <span className="text-[8px] text-iceBlue truncate font-bold">AUDIO ENGINE</span>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+
+
+            {/* =============================================================== */}
+            {/* 20% SCREEN: DEDICATED ELEVATED CYBER CHAT TERMINAL              */}
+            {/* =============================================================== */}
+            <div className="w-[20%] min-w-[270px] h-full flex flex-col bg-elevatedNavy border-l border-structuralBlue relative z-20 shadow-2xl">
+
+              {/* Top Chat Header */}
+              <div className="px-3 py-2 border-b border-structuralBlue flex items-center justify-between bg-recessedDark font-mono text-xs">
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 rounded-full bg-electricCyan animate-ping"></div>
+                  <span className="font-bold text-electricCyan tracking-wider neon-text">TERMINAL</span>
+                  <span className="text-[9px] text-coolSteel font-normal">[{statusText}]</span>
+                </div>
+
+                <div className="flex items-center space-x-1">
+                  {/* Vision Mode Toggle */}
+                  <button
+                    onClick={handleToggleVision}
+                    title="Toggle Vision Mode"
+                    className={`text-[9px] px-1.5 py-0.5 rounded border transition flex items-center space-x-1 ${isVisionEnabled
+                      ? 'bg-electricCyan/20 border-electricCyan text-iceBlue font-bold shadow-[0_0_8px_#00F0FF]'
+                      : 'bg-abyss border-structuralBlue text-coolSteel'
+                      }`}
+                  >
+                    <Icons.Eye />
+                    <span>{isVisionEnabled ? 'VIS:ON' : 'VIS:OFF'}</span>
+                  </button>
+
+                  {/* Settings Gear */}
+                  <button
+                    onClick={() => setIsSettingsOpen(true)}
+                    className="p-1 rounded bg-abyss border border-structuralBlue text-coolSteel hover:text-electricCyan hover:border-electricCyan transition"
+                  >
+                    <Icons.Settings />
+                  </button>
+                </div>
+              </div>
+
+              {/* Model Selector Bar */}
+              <div className="px-3 py-1 border-b border-structuralBlue bg-abyss flex items-center justify-between text-[9px] font-mono">
+                <span className="text-coolSteel">ENGINE:</span>
+                <select
+                  value={selectedModel}
+                  onChange={(e) => setSelectedModel(e.target.value)}
+                  className="bg-transparent text-electricCyan border-none outline-none cursor-pointer text-[9px] font-bold"
+                >
+                  {availableModels.map(m => (
+                    <option key={m} value={m} className="bg-abyss text-slateWhite">
+                      {m.split('/').pop()}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Speaking Status Pill */}
+              {isSpeaking && (
+                <div className="px-3 py-1 bg-elevatedNavy border-b border-electricCyan/40 flex items-center justify-between text-[9px] font-mono text-electricCyan">
+                  <div className="flex items-center space-x-1.5">
+                    <Icons.Volume />
+                    <span>VOICE BROADCAST ACTIVE</span>
+                  </div>
+                  <button onClick={handleStopSpeech} className="text-crimsonWarning font-bold hover:underline">STOP</button>
+                </div>
+              )}
+
+              {/* Chat Messages Feed */}
+              <div className="flex-1 overflow-y-auto p-2 space-y-2.5 font-sans text-xs">
+                {messages.map((msg) => {
+                  const isUser = msg.role === 'user';
+                  const isError = msg.role === 'error';
+
+                  if (isError) {
+                    return (
+                      <div key={msg.id} className="p-2 rounded bg-alertSurface border border-crimsonWarning text-crimsonWarning text-[10px] font-mono alert-glow">
+                        <div className="flex items-center space-x-1 font-bold mb-0.5">
+                          <Icons.Alert />
+                          <span>ALERT NOTIFICATION</span>
+                        </div>
+                        <div>{msg.text}</div>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div key={msg.id} className={`flex flex-col ${isUser ? 'items-end' : 'items-start'}`}>
+
+                      {/* Tool Event Badges */}
+                      {!isUser && msg.tools && msg.tools.length > 0 && (
+                        <div className="w-full mb-1 space-y-1">
+                          {msg.tools.map((t, idx) => (
+                            <div key={idx} className="p-1 rounded bg-recessedDark border border-structuralBlue text-[9px] font-mono text-slateWhite">
+                              <div className="flex justify-between items-center font-bold">
+                                <span className="text-iceBlue">EXEC: {t.tool}()</span>
+                                <span className="text-electricCyan">[SUCCESS]</span>
+                              </div>
+                              <div className="text-coolSteel text-[8px] mt-0.5 truncate">{t.result?.message}</div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Chat Bubble (Pure Neon Blue Surface) */}
+                      <div className={`w-full rounded p-2 text-xs shadow-lg transition border ${isUser
+                        ? 'bg-[#040C18] border-structuralBlue text-slateWhite'
+                        : 'bg-[#07152B] border-electricCyan/50 text-slateWhite shadow-[0_4px_12px_rgba(0,0,0,0.5)]'
+                        }`}>
+                        <div className="flex items-center justify-between text-[8px] font-mono pb-1 mb-1 border-b border-structuralBlue">
+                          <span className={`font-bold ${isUser ? 'text-iceBlue' : 'text-electricCyan'}`}>
+                            {isUser ? '[OPERATOR]' : (msg.isTamil ? '[TAMIL NEURAL]' : '[JARVIS 2.0]')}
+                          </span>
+                          <span className="text-coolSteel">{msg.timestamp}</span>
+                        </div>
+                        <div className="whitespace-pre-wrap leading-relaxed text-[11px] font-sans">
+                          {msg.text}
+                        </div>
+                      </div>
+
+                    </div>
+                  );
+                })}
+
+                {isLoading && (
+                  <div className="p-2 rounded bg-recessedDark border border-structuralBlue text-electricCyan font-mono text-[9px] animate-pulse flex items-center space-x-1.5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-electricCyan animate-ping"></div>
+                    <span>Neural analysis and execution in progress...</span>
+                  </div>
+                )}
+                <div ref={chatEndRef} />
+              </div>
+
+              {/* Quick Directive Chips */}
+              <div className="p-1.5 border-t border-structuralBlue bg-recessedDark flex flex-wrap gap-1 font-mono text-[9px]">
+                <button
+                  onClick={() => handleSendMessage('Check system health')}
+                  className="px-2 py-0.5 rounded bg-elevatedNavy border border-structuralBlue text-electricCyan hover:border-electricCyan transition flex items-center space-x-1"
+                >
+                  <Icons.Activity />
+                  <span>Health</span>
+                </button>
+                <button
+                  onClick={() => handleSendMessage('List all running applications')}
+                  className="px-2 py-0.5 rounded bg-elevatedNavy border border-structuralBlue text-slateWhite hover:border-electricCyan hover:text-electricCyan transition flex items-center space-x-1"
+                >
+                  <Icons.Search />
+                  <span>Apps</span>
+                </button>
+                <button
+                  onClick={() => handleSendMessage('Open Chrome')}
+                  className="px-2 py-0.5 rounded bg-elevatedNavy border border-structuralBlue text-slateWhite hover:border-electricCyan hover:text-electricCyan transition flex items-center space-x-1"
+                >
+                  <Icons.Globe />
+                  <span>Chrome</span>
+                </button>
+                <button
+                  onClick={() => handleSendMessage('Take screenshot of desktop')}
+                  className="px-2 py-0.5 rounded bg-elevatedNavy border border-structuralBlue text-iceBlue hover:border-iceBlue transition flex items-center space-x-1"
+                >
+                  <Icons.Camera />
+                  <span>Screen</span>
+                </button>
+              </div>
+
+              {/* Bottom Directive Input Dock */}
+              <div className="p-1.5 border-t border-structuralBlue bg-abyss">
+                <form
+                  onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }}
+                  className="flex items-center space-x-1 bg-elevatedNavy border border-structuralBlue focus-within:border-electricCyan rounded px-2 py-1 shadow-inner"
+                >
+                  <Icons.Terminal />
+                  <input
+                    type="text"
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    placeholder="Enter directive..."
+                    className="flex-1 bg-transparent text-[11px] text-slateWhite placeholder-coolSteel outline-none font-sans ml-1"
+                    disabled={isLoading}
+                  />
+                  <button
+                    type="submit"
+                    disabled={isLoading || !input.trim()}
+                    className="p-1 rounded bg-electricCyan/20 border border-electricCyan text-electricCyan text-xs font-mono font-bold hover:bg-electricCyan/30 disabled:opacity-30 transition"
+                    title="Execute Directive"
+                  >
+                    <Icons.Send />
+                  </button>
+                </form>
+              </div>
+
+            </div>
+
+          </div>
+
+
+          {/* ================================================================= */}
+          {/* SETTINGS DIALOG MODAL (SOLID LAYERED DEPTH)                       */}
+          {/* ================================================================= */}
+          {isSettingsOpen && (
+            <div className="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+              <div className="w-full max-w-md rounded panel-elevation chamfer-box p-4 space-y-3 font-mono text-xs text-slateWhite shadow-2xl">
+                <div className="flex justify-between items-center border-b border-structuralBlue pb-2 text-electricCyan font-bold">
+                  <span>CONFIGURATION MATRIX</span>
+                  <button onClick={() => setIsSettingsOpen(false)} className="text-coolSteel hover:text-white">✕</button>
+                </div>
+
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-coolSteel block mb-1">Groq API Key</label>
+                    <input
+                      type="password"
+                      placeholder="gsk_..."
+                      onChange={(e) => fetch('/api/config', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ groq_api_key: e.target.value }) })}
+                      className="w-full p-1.5 rounded panel-recessed border border-structuralBlue focus:border-electricCyan outline-none text-xs text-slateWhite"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-coolSteel block mb-1">Telegram Bot Token</label>
+                    <input
+                      type="password"
+                      placeholder="Token from @BotFather"
+                      onChange={(e) => fetch('/api/config', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ telegram_token: e.target.value }) })}
+                      className="w-full p-1.5 rounded panel-recessed border border-structuralBlue focus:border-electricCyan outline-none text-xs text-slateWhite"
+                    />
+                  </div>
+
+                  <div className="pt-2 border-t border-structuralBlue flex justify-end">
+                    <button
+                      onClick={() => setIsSettingsOpen(false)}
+                      className="px-3 py-1 rounded bg-electricCyan/20 border border-electricCyan text-electricCyan font-bold hover:bg-electricCyan/30"
+                    >
+                      Done
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<IronManHUD />);
+  </script>
+</body>
+
+</html>
